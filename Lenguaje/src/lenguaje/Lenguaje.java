@@ -1,45 +1,38 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package lenguaje;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/**
- *
- * @author DAM_M
- */
 public class Lenguaje {
 
-    /**
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
-        //Creo el array de cadena
-        String[] cadena = new String[Integer.parseInt(args[1])];
+        // Obtenemos los parámetros de la línea de comandos
+        String nombreInstancia = args[0];  // Nombre de la instancia
+        int numPalabras = Integer.parseInt(args[1]);  // Número de palabras a generar
+        String fileName = args[2];  // Nombre del archivo para escribir las palabras
 
-        //Genero las palabras aleatorias
-        for (int i = 0; i < cadena.length; i++) {
+        // Creo el array de cadenas de texto
+        String[] cadenas = new String[numPalabras];
+
+        // Genero las palabras aleatorias
+        for (int i = 0; i < cadenas.length; i++) {
             StringBuilder sb = new StringBuilder();
             for (int j = 0; j < 5; j++) {
                 sb.append((char) (Math.random() * 26 + 'a'));
             }
-            cadena[i] = "Escrito por " + args[0] + ": " + sb.toString();
+            cadenas[i] = sb.toString();
+            System.out.println(cadenas[i]);  // Imprime cada palabra generada
         }
 
-        //Escribo el codigo en el archivo con nombre en args[2] usando bufferedWritter
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(args[2]))) {
-            //Escribo cada cadena en una linea diferente
-            for (String linea : cadena) {
-                bw.write(linea);
-                bw.newLine();
+        // Escribo las palabras generadas en el archivo
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
+            for (String palabra : cadenas) {
+                bw.write("Escrito por " + nombreInstancia + ": " + palabra);
+                bw.newLine();  // Escribe una palabra por línea
             }
-        } catch (IOException e) { //capturo la error de entrada y salida
+        } catch (IOException e) {
             System.err.println("Error al escribir el archivo: " + e.getMessage());
-        };
+        }
     }
-    
 }
