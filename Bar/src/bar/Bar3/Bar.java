@@ -1,38 +1,65 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
-package bar.bar2;
+package bar.Bar3;
 
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-/**
- *
- * @author DAM_M
- */
 public class Bar {
     int aforoMax;
-    private final Semaphore semaphore;
+    int clientesDentro = 0; // Clientes actualmente dentro del bar
+    private final Lock lock = new ReentrantLock();
+    private final Condition puedenEntrar = lock.newCondition(); // Condición para controlar acceso al bar
+    private int ewookEnCola = 0; // Número de Ewooks esperando
+    private int goraxEnCola = 0; // Número de Gorax esperando
 
     public Bar(int aforoMax) {
         this.aforoMax = aforoMax;
-        this.semaphore = new Semaphore(aforoMax); // Inicializamos el semáforo con el aforo máximo
     }
 
-    public void entrar(int id) {
+    public void entrar(int id, String tipo) {
+        lock.lock();
         try {
-            System.out.println("Cliente " + id + " intentando entrar...");
-            semaphore.acquire(); // Intentamos adquirir un permiso
-            System.out.println("-->Cliente " + id + " ha entrado.");
-            // Simula el tiempo que el cliente pasa dentro del bar
-            Thread.sleep(2000);
+            if (tipo.equals("Ewook")) {
+                ewookEnCola++;
+            } else {
+                goraxEnCola++;
+            }
+
+            // Esperar mientras el bar esté lleno o si es Gorax y hay Ewooks en cola
+            while (clientesDentro >= aforoMax || (tipo.equals("Gorax") && ewookEnCola > 0)) {
+                puedenEntrar.await();
+            }
+
+            // Cuando se puede entrar, actualizar estado
+            clientesDentro++;
+            if (tipo.equals("Ewook")) {
+                ewookEnCola--;
+            } else {
+                goraxEnCola--;
+            }
+
+            System.out.println("--> " + tipo + " (" + id + ") entra en el bar. Clientes dentro: " + clientesDentro);
+
+
+            Thread.sleep(750);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            lock.unlock();
         }
     }
 
-    public void salir(int id) {
-        System.out.println("<-Cliente " + id + " ha salido.");
-        semaphore.release(); // Liberamos el permiso para que otro cliente pueda entrar
+    public void salir(int id, String tipo) {
+        lock.lock();
+        try {
+            clientesDentro--;
+            System.out.println("<-- " + tipo + " (" + id + ") ha salido del bar. Clientes dentro: " + clientesDentro);
+
+            // Notificar a los clientes en espera que ahora hay espacio
+            puedenEntrar.signalAll();
+
+        } finally {
+            lock.unlock();
+        }
     }
 }
