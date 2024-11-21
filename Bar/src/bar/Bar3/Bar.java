@@ -27,6 +27,7 @@ public class Bar {
 
             // Esperar mientras el bar esté lleno o si es Gorax y hay Ewooks en cola
             while (clientesDentro >= aforoMax || (tipo.equals("Gorax") && ewookEnCola > 0)) {
+                System.out.println(tipo + " (" + id + ") está esperando porque no hay espacio.");
                 puedenEntrar.await();
             }
 
